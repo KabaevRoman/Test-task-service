@@ -5,12 +5,11 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 public class Data implements Serializable {
-
-    transient DataHandler dataHandler;
-    transient Timer timer;
-    String content;
-    String key;
-    long ttl;
+    private transient Timer timer;
+    private transient DataHandler dataHandler;
+    private String content;
+    private String key;
+    private long ttl;
 
     public Data(String key, String content, DataHandler dataHandler) {
         this.key = key;
@@ -30,6 +29,10 @@ public class Data implements Serializable {
         this.timer.schedule(new TimeToLive(), ttl * 1000);
     }
 
+    public void setDataHandler(DataHandler dataHandler) {
+        this.dataHandler = dataHandler;
+    }
+
     //если кто-то получает доступ к записи то ее время жизни пролонгируется становится базовым
     public void reschedule() {
         if (this.timer != null) {
@@ -37,6 +40,34 @@ public class Data implements Serializable {
         }
         this.timer = new Timer();
         this.timer.schedule(new TimeToLive(), ttl * 1000);
+    }
+
+    public String getContent() {
+        return content;
+    }
+
+    public void setContent(String content) {
+        this.content = content;
+    }
+
+    public String getKey() {
+        return key;
+    }
+
+    public void setKey(String key) {
+        this.key = key;
+    }
+
+    public long getTtl() {
+        return ttl;
+    }
+
+    public void setTtl(long ttl) {
+        this.ttl = ttl;
+    }
+
+    public void earlyExpire() {
+        timer.cancel();
     }
 
     class TimeToLive extends TimerTask {

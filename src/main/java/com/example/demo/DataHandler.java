@@ -11,31 +11,39 @@ public class DataHandler {
         this.dataMap = new HashMap<>();
     }
 
-    public String getData(String key) {
+    public Data getData(String key) {
         dataMap.get(key).reschedule();
-        return dataMap.get(key).content;
+        return dataMap.get(key);
     }
 
-    public void setData(String key, String content) {
+    public String setData(String key, String content) {
+        if (dataMap.containsKey(key)) {
+            this.remove(key);
+        }
         dataMap.put(key, new Data(key, content, this));
+        return "Data successfully added";
     }
 
-    public void setData(String key, String content, long ttl) {
+    public String setData(String key, String content, long ttl) {
+        if (dataMap.containsKey(key)) {
+            this.remove(key);
+        }
         dataMap.put(key, new Data(key, content, ttl, this));
+        return "Data successfully added";
     }
 
     public void remove(String key) {
+        dataMap.get(key).earlyExpire();
         dataMap.remove(key);
     }
 
-    public boolean dump() throws IOException {
+    public void dump() throws IOException {
         File file = new File("filename.txt");
         FileOutputStream fos = new FileOutputStream(file);
         ObjectOutputStream oos = new ObjectOutputStream(fos);
         oos.writeObject(dataMap);
         oos.close();
         fos.close();
-        return true;
     }
 
     public void load() throws IOException, ClassNotFoundException {
@@ -45,7 +53,7 @@ public class DataHandler {
         dataMap = (HashMap<String, Data>) ois.readObject();
         for (var entry : dataMap.entrySet()) {
             Data entryData = entry.getValue();
-            entryData.dataHandler = this;
+            entryData.setDataHandler(this);
             entryData.reschedule();
         }
         ois.close();

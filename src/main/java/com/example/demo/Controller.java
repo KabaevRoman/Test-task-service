@@ -1,28 +1,58 @@
 package com.example.demo;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
+
+import java.io.IOException;
 
 @RestController
 public class Controller {
     DataHandler dataHandler = new DataHandler();
 
-    @RequestMapping(path = "/set/{key}/{content}/{ttl}")
-    void set(@PathVariable String key, @PathVariable String content, @PathVariable long ttl) {
-        dataHandler.setData(key, content, ttl);
+    @RequestMapping(path = "/set/{key}/{content}")
+    String set(@PathVariable String key, @PathVariable String content) {
+        return dataHandler.setData(key, content);//default ttl is 5 seconds ttl is low for demonstration
     }
 
-    @RequestMapping(path = "/set/{key}/{content}")
-    void set(@PathVariable String key, @PathVariable String content) {
-        dataHandler.setData(key, content);//default ttl is 5 seconds ttl is low for demonstration
+    @RequestMapping(path = "/set/{key}/{content}/{ttl}")
+    String set(@PathVariable String key, @PathVariable String content, @PathVariable long ttl) {
+        return dataHandler.setData(key, content, ttl);
     }
 
     @RequestMapping(path = "/get/{key}")
-    String get(@PathVariable String key) {
-        return dataHandler.getData(key);
+    Data get(@PathVariable String key) {
+        if (dataHandler.dataMap.containsKey(key)) {
+            return dataHandler.getData(key);
+        } else {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "data with key: " + key + " not found");
+        }
     }
 
     @RequestMapping(path = "/remove/{key}")
-    void remove(@PathVariable String key) {
-        dataHandler.remove(key);
+    Data remove(@PathVariable String key) {
+        if (dataHandler.dataMap.containsKey(key)) {
+            dataHandler.remove(key);
+            return dataHandler.getData(key);
+        } else {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "data with key: " + key + " not found");
+        }
+    }
+
+    @RequestMapping(path = "/dump")
+    String dump() throws IOException {
+        dataHandler.dump();
+        return "Dump was successfully created";
+    }
+
+    @RequestMapping(path = "/load")
+    String load() throws IOException, ClassNotFoundException {
+        dataHandler.load();
+        return "Saved data loaded";
+    }
+
+    @ExceptionHandler(ResponseStatusException.class)
+    public CustomError handleMyCustomException(ResponseStatusException ex) {
+        return new CustomError(ex.getReason(), ex.getRawStatusCode());
     }
 }
