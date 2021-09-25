@@ -6,31 +6,31 @@ import java.util.TimerTask;
 
 public class Data implements Serializable {
     private transient Timer timer;
-    private transient DataHandler dataHandler;
+    private transient DataHandlerService dataHandlerService;
     private String content;
     private String key;
     private long ttl;
 
-    public Data(String key, String content, DataHandler dataHandler) {
+    public Data(String key, String content, DataHandlerService dataHandlerService) {
         this.key = key;
-        this.dataHandler = dataHandler;
+        this.dataHandlerService = dataHandlerService;
         this.ttl = 5;//basic ttl is 5 seconds
         this.content = content;
         this.timer = new Timer();
         this.timer.schedule(new TimeToLive(), ttl * 1000);
     }
 
-    public Data(String key, String content, long ttl, DataHandler dataHandler) {
+    public Data(String key, String content, long ttl, DataHandlerService dataHandlerService) {
         this.key = key;
         this.ttl = ttl;
-        this.dataHandler = dataHandler;
+        this.dataHandlerService = dataHandlerService;
         this.content = content;
         this.timer = new Timer();
         this.timer.schedule(new TimeToLive(), ttl * 1000);
     }
 
-    public void setDataHandler(DataHandler dataHandler) {
-        this.dataHandler = dataHandler;
+    public void setDataHandler(DataHandlerService dataHandlerService) {
+        this.dataHandlerService = dataHandlerService;
     }
 
     //если кто-то получает доступ к записи то ее время жизни пролонгируется становится базовым
@@ -73,7 +73,7 @@ public class Data implements Serializable {
     class TimeToLive extends TimerTask {
         @Override
         public void run() {
-            dataHandler.remove(key);
+            dataHandlerService.remove(key);
             System.out.println("Element with key " + key + " expired");
             timer.cancel();
         }

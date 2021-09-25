@@ -8,22 +8,23 @@ import java.io.IOException;
 
 @RestController
 public class Controller {
-    DataHandler dataHandler = new DataHandler();
+
+    DataHandlerService dataHandlerService = new DataHandlerService();
 
     @RequestMapping(path = "/set/{key}/{content}")
     String set(@PathVariable String key, @PathVariable String content) {
-        return dataHandler.setData(key, content);//default ttl is 5 seconds ttl is low for demonstration
+        return dataHandlerService.setData(key, content);//default ttl is 5 seconds ttl is low for demonstration
     }
 
     @RequestMapping(path = "/set/{key}/{content}/{ttl}")
     String set(@PathVariable String key, @PathVariable String content, @PathVariable long ttl) {
-        return dataHandler.setData(key, content, ttl);
+        return dataHandlerService.setData(key, content, ttl);
     }
 
     @RequestMapping(path = "/get/{key}")
     Data get(@PathVariable String key) {
-        if (dataHandler.dataMap.containsKey(key)) {
-            return dataHandler.getData(key);
+        if (dataHandlerService.dataMap.containsKey(key)) {
+            return dataHandlerService.getData(key);
         } else {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "data with key: " + key + " not found");
         }
@@ -31,9 +32,8 @@ public class Controller {
 
     @RequestMapping(path = "/remove/{key}")
     Data remove(@PathVariable String key) {
-        if (dataHandler.dataMap.containsKey(key)) {
-            dataHandler.remove(key);
-            return dataHandler.getData(key);
+        if (dataHandlerService.dataMap.containsKey(key)) {
+            return dataHandlerService.remove(key);
         } else {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "data with key: " + key + " not found");
         }
@@ -41,13 +41,13 @@ public class Controller {
 
     @RequestMapping(path = "/dump")
     String dump() throws IOException {
-        dataHandler.dump();
+        dataHandlerService.dump();
         return "Dump was successfully created";
     }
 
     @RequestMapping(path = "/load")
     String load() throws IOException, ClassNotFoundException {
-        dataHandler.load();
+        dataHandlerService.load();
         return "Saved data loaded";
     }
 
